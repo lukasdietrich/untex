@@ -1,0 +1,11 @@
+\documentclass
+{{- if .Document.Options}}[ {{- .Document.Options -}} ]{{end -}} 
+{ {{- .Document.Type -}} }
+
+{{range .Packages -}}
+\usepackage 
+{{- if .Options}}[ {{- .Options -}} ]{{end -}}
+{ {{- .Name -}} }
+{{end}}
+\begin{document}
+{{.Document.Prefix}}

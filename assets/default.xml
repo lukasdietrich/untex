@@ -1,0 +1,24 @@
+<template>
+    <document type="scrartcl" options="a4paper,10pt,{{.language}}">
+        <prefix>
+            \title{ {{- .title -}} }
+            \subtitle{ {{- .subtitle -}} }
+            \author{ {{- .author -}} }
+            \date{ {{- .date -}} }
+
+            \maketitle
+            \tableofcontents
+            \newpage
+        </prefix>
+    </document>
+    <packages>
+        <package name="inputenc" options="utf8" />
+        <package name="fontenc" options="T1" />
+        <package name="babel" options="{{.language}}" />
+        <package name="amsmath" />
+        <package name="amsfonts" />
+        <package name="libertine" />
+        <package name="hyperref" />
+        <package name="parskip" />
+    </packages>
+</template>

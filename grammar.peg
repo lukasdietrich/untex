@@ -1,0 +1,80 @@
+# See <https://github.com/pointlander/peg>
+
+package main
+
+type Grammar Peg {
+    *Compiler
+    StringStack
+}
+
+Start       <- Meta? { p.Begin() } Body { p.End() } !.
+
+Meta        <- '---' WS* NL
+               ( <[[a-z]]+> ':' WS*     { p.Push(buffer[begin:end]) }
+                 <PT*> NL               { p.SetMeta(p.Pop(), buffer[begin:end]) }
+               / WS* NL
+               )*
+               '---' WS* NL
+
+Body        <- ( Import
+               / Headline
+               / List
+               / Latex
+               / Paragraph
+               )                        { p.NewLine() } 
+               (NL Body)?
+
+Import      <- '@import('
+               <(![\r\n)] .)+>          { p.Import(buffer[begin:end]) }
+               ')'
+
+Headline    <- ( SubSubSect 
+               / SubSect 
+               / Section
+               )
+Section     <- '#'   WS* <PT+>          { p.AddSection(buffer[begin:end], 0) }
+SubSect     <- '##'  WS* <PT+>          { p.AddSection(buffer[begin:end], 1) }
+SubSubSect  <- '###' WS* <PT+>          { p.AddSection(buffer[begin:end], 2) }
+
+List        <- ListItem                 { p.EndAllBlocks() }
+ListItem    <- Tabs
+               ( ListUnorder
+               / ListOrdered 
+               / ListNamed
+               )
+               WS* Inline*              { p.NewLine() }
+               (NL ListItem)?
+
+ListUnorder <- '-'                      { p.AddListItem("itemize", "") }
+ListOrdered <- [0-9]+ '.'               { p.AddListItem("enumerate", "") }
+ListNamed   <- <[[a-z0-9]] ')'>         { p.AddListItem("description", buffer[begin:end]) }
+
+Tabs        <- { p.tabs = 0 } Tab*
+Tab         <- ( '    ' 
+               / (' '? ' '? ' '? [\t])
+               )                        { p.tabs++ }
+
+Latex       <- '%%%' WS* NL
+               <(!'%%%' .)*>            { p.AddLatex(buffer[begin:end]) }
+               '%%%' WS*
+
+Paragraph   <- Inline*
+
+Inline      <- ( IMathBlock
+               / IMath
+               / IEmph
+               / IBold
+               / ILink
+               / <PT>                   { p.AddText(buffer[begin:end]) }
+               )
+
+IMathBlock  <- <'$$' (!'$' PT)+ '$$'>   { p.AddLatex(buffer[begin:end]) }
+IMath       <- <'$' (!'$' PT)+ '$'>     { p.AddLatex(buffer[begin:end]) }
+IEmph       <- '/' <(!'/' PT)+> '/'     { p.AddEmph(buffer[begin:end]) }
+IBold       <- '*' <(!'*' PT)+> '*'     { p.AddBold(buffer[begin:end]) }
+ILink       <- '[' <(!']' PT)+> ']'     { p.Push(buffer[begin:end]) }
+               '(' <(!')' PT)+> ')'     { p.AddLink(p.Pop(), buffer[begin:end]) }
+
+PT          <- (!NL .)
+NL          <- '\r'? '\n'
+WS          <- [ \t]
