@@ -16,7 +16,7 @@
         <package name="fontenc" options="T1" />
         <package name="babel" options="{{.language}}" />
         <package name="amsmath" />
-        <package name="amsfonts" />
+        <package name="eulervm" options="small,text-hat-accent,euler-digits,T1" />
         <package name="libertine" />
         <package name="hyperref" />
         <package name="parskip" />
