@@ -18,7 +18,6 @@
         <package name="amsmath" />
         <package name="eulervm" options="small,text-hat-accent,euler-digits,T1" />
         <package name="libertine" />
-        <package name="hyperref" />
         <package name="parskip" />
     </packages>
 </template>
