@@ -9,12 +9,12 @@ type Grammar Peg {
 
 Start       <- Meta? { p.Begin() } Body { p.End() } !.
 
-Meta        <- '---' WS* NL
-               ( <[[a-z]]+> ':' WS*     { p.Push(buffer[begin:end]) }
-                 <PT*> NL               { p.SetMeta(p.Pop(), buffer[begin:end]) }
-               / WS* NL
+Meta        <- '---' Spacing Newline
+               ( <[[a-z]]+> ':' Spacing { p.Push(text) }
+                 <Text*> Newline        { p.SetMeta(p.Pop(), text) }
+               / Spacing Newline
                )*
-               '---' WS* NL
+               '---' Spacing Newline
 
 Body        <- ( Import
                / Headline
@@ -22,19 +22,20 @@ Body        <- ( Import
                / Latex
                / Paragraph
                )                        { p.NewLine() } 
-               (NL Body)?
+               (Newline Body)?
 
 Import      <- '@import('
-               <(![\r\n)] .)+>          { p.Import(buffer[begin:end]) }
+               <(![\r\n)] .)+>          { p.Import(text) }
                ')'
 
 Headline    <- ( SubSubSect 
                / SubSect 
                / Section
                )
-Section     <- '#'   WS* <PT+>          { p.AddSection(buffer[begin:end], 0) }
-SubSect     <- '##'  WS* <PT+>          { p.AddSection(buffer[begin:end], 1) }
-SubSubSect  <- '###' WS* <PT+>          { p.AddSection(buffer[begin:end], 2) }
+
+Section     <- '#'   Spacing <Text+>    { p.AddSection(text, 0) }
+SubSect     <- '##'  Spacing <Text+>    { p.AddSection(text, 1) }
+SubSubSect  <- '###' Spacing <Text+>    { p.AddSection(text, 2) }
 
 List        <- ListItem                 { p.EndAllBlocks() }
 ListItem    <- Tabs
@@ -42,21 +43,21 @@ ListItem    <- Tabs
                / ListOrdered 
                / ListNamed
                )
-               WS* Inline*              { p.NewLine() }
-               (NL ListItem)?
+               Spacing Inline*          { p.NewLine() }
+               (Newline ListItem)?
 
 ListUnorder <- '-'                      { p.AddListItem("itemize", "") }
 ListOrdered <- [0-9]+ '.'               { p.AddListItem("enumerate", "") }
-ListNamed   <- <[[a-z0-9]] ')'>         { p.AddListItem("description", buffer[begin:end]) }
+ListNamed   <- <[[a-z0-9]]+ ')'>        { p.AddListItem("description", text) }
 
 Tabs        <- { p.tabs = 0 } Tab*
 Tab         <- ( '    ' 
                / (' '? ' '? ' '? [\t])
                )                        { p.tabs++ }
 
-Latex       <- '%%%' WS* NL
-               <(!'%%%' .)*>            { p.AddLatex(buffer[begin:end]) }
-               '%%%' WS*
+Latex       <- '%%%' Spacing Newline
+               <(!'%%%' .)*>            { p.AddLatex(text) }
+               '%%%' Spacing
 
 Paragraph   <- Inline*
 
@@ -65,16 +66,17 @@ Inline      <- ( IMathBlock
                / IEmph
                / IBold
                / ILink
-               / <PT>                   { p.AddText(buffer[begin:end]) }
+               / <Text>                 { p.AddText(text) }
                )
 
-IMathBlock  <- <'$$' (!'$' PT)+ '$$'>   { p.AddLatex(buffer[begin:end]) }
-IMath       <- <'$' (!'$' PT)+ '$'>     { p.AddLatex(buffer[begin:end]) }
-IEmph       <- '/' <(!'/' PT)+> '/'     { p.AddEmph(buffer[begin:end]) }
-IBold       <- '*' <(!'*' PT)+> '*'     { p.AddBold(buffer[begin:end]) }
-ILink       <- '[' <(!']' PT)+> ']'     { p.Push(buffer[begin:end]) }
-               '(' <(!')' PT)+> ')'     { p.AddLink(p.Pop(), buffer[begin:end]) }
+IMathBlock  <- <'$$' (!'$' Text)+ '$$'> { p.AddLatex(text) }
+IMath       <- <'$' (!'$' Text)+ '$'>   { p.AddLatex(text) }
+IEmph       <- '/' <(!'/' Text)+> '/'   { p.AddEmph(text) }
+IBold       <- '*' <(!'*' Text)+> '*'   { p.AddBold(text) }
+ILink       <- '[' <(!']' Text)+> ']'   { p.Push(text) }
+               '(' <(!')' Text)+> ')'   { p.AddLink(p.Pop(), text) }
 
-PT          <- (!NL .)
-NL          <- '\r'? '\n'
-WS          <- [ \t]
+Text        <- (!Newline .)
+Newline     <- '\r'? '\n'
+Spacing     <- Whitespace*
+Whitespace  <- [ \t]
