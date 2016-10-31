@@ -9,6 +9,8 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/blang/vfs"
 )
 
 const (
@@ -20,7 +22,8 @@ func main() {
 		in     string
 		out    string
 		writer io.Writer
-		buffer *bufio.Writer
+
+		fs = NewFilesystem(vfs.OS())
 	)
 
 	flag.StringVar(&out, "output", STDOUT, "output file")
@@ -35,7 +38,7 @@ func main() {
 		writer = os.Stdout
 		log.SetOutput(os.Stderr)
 	} else {
-		f, err := os.Create(out)
+		f, err := fs.Create(out)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -44,15 +47,20 @@ func main() {
 		writer = f
 	}
 
-	buffer = bufio.NewWriter(writer)
+	var (
+		buffer   = bufio.NewWriter(writer)
+		compiler = Compiler{
+			w:    buffer,
+			fs:   fs,
+			root: true,
+		}
+	)
 
-	err := (&Compiler{w: buffer, root: true}).Compile(in)
-	if err != nil {
+	if err := compiler.Compile(in); err != nil {
 		log.Fatal(err)
 	}
 
-	err = buffer.Flush()
-	if err != nil {
+	if err := buffer.Flush(); err != nil {
 		log.Fatal(err)
 	}
 }

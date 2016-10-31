@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -32,7 +31,8 @@ var (
 type Meta map[string]string
 
 type Compiler struct {
-	w io.Writer
+	w  io.Writer
+	fs *Filesystem
 
 	meta Meta
 	tmpl *Template
@@ -45,7 +45,7 @@ type Compiler struct {
 }
 
 func (c *Compiler) Compile(src string) error {
-	buf, err := ioutil.ReadFile(src)
+	buf, err := c.fs.ReadFile(src)
 	if err != nil {
 		return err
 	}
