@@ -7,5 +7,7 @@
 {{- if .Options}}[ {{- .Options -}} ]{{end -}}
 { {{- .Name -}} }
 {{end}}
+
+{{- .Document.Preamble}}
 \begin{document}
 {{.Document.Prefix}}

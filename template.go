@@ -32,10 +32,11 @@ func init() {
 }
 
 type Document struct {
-	Type    string `xml:"type,attr"`
-	Options string `xml:"options,attr"`
-	Prefix  string `xml:"prefix"`
-	Suffix  string `xml:"suffix"`
+	Type     string `xml:"type,attr"`
+	Options  string `xml:"options,attr"`
+	Prefix   string `xml:"prefix"`
+	Suffix   string `xml:"suffix"`
+	Preamble string `xml:"preamble"`
 }
 
 type Package struct {
@@ -95,6 +96,7 @@ func (t *Template) AddPackage(p Package) {
 }
 
 func (t *Template) ApplyMeta(m Meta) error {
+	t.Document.Preamble = trimIndentation(t.Document.Preamble)
 	t.Document.Prefix = trimIndentation(t.Document.Prefix)
 	t.Document.Suffix = trimIndentation(t.Document.Suffix)
 
