@@ -7,7 +7,7 @@ type Grammar Peg {
     StringStack
 }
 
-Start       <- Meta? { p.Begin() } Body { p.End() } !.
+Start       <- Meta? { p.Begin() } Newline* Body { p.End() } !.
 
 Meta        <- '---' Spacing Newline
                ( <[[a-z]]+> ':' Spacing { p.Push(text) }
@@ -74,7 +74,7 @@ IMath       <- <'$' (!'$' Text)+ '$'>   { p.AddLatex(text) }
 IEmph       <- '/' <(!'/' Text)+> '/'   { p.AddEmph(text) }
 IBold       <- '*' <(!'*' Text)+> '*'   { p.AddBold(text) }
 ILink       <- '[' <(!']' Text)+> ']'   { p.Push(text) }
-               '(' <(!')' Text)+> ')'   { p.AddLink(p.Pop(), text) }
+               '(' <(!')' Text)+> ')'   { p.AddLink(text, p.Pop()) }
 
 Text        <- (!Newline .)
 Newline     <- '\r'? '\n'

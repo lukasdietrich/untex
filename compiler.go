@@ -153,17 +153,17 @@ func (c *Compiler) NewLine() {
 		return
 	}
 
-	c.AddLatex("\n")
+	c.Write("\n")
 	c.nl++
 }
 
 func (c *Compiler) BeginBlock(n string) {
-	c.AddLatex(`\begin{` + n + "}\n")
+	c.Write(`\begin{` + n + "}\n")
 	c.block.Push(n)
 }
 
 func (c *Compiler) EndBlock() {
-	c.AddLatex(`\end{` + c.block.Pop() + "}\n")
+	c.Write(`\end{` + c.block.Pop() + "}\n")
 }
 
 func (c *Compiler) EndAllBlocks() {
@@ -172,7 +172,7 @@ func (c *Compiler) EndAllBlocks() {
 	}
 }
 
-func (c *Compiler) AddLatex(t string) {
+func (c *Compiler) Write(t string) {
 	c.nl = 0
 	_, err := fmt.Fprint(c.w, t)
 	if err != nil {
@@ -181,11 +181,15 @@ func (c *Compiler) AddLatex(t string) {
 }
 
 func (c *Compiler) AddText(t string) {
-	c.AddLatex(texEscaper.Replace(t))
+	c.Write(texEscaper.Replace(t))
+}
+
+func (c *Compiler) AddLatex(t string) {
+	c.Write(strings.Trim(t, "\n"))
 }
 
 func (c *Compiler) AddSection(t string, l int) {
-	c.AddLatex(fmt.Sprintf(
+	c.Write(fmt.Sprintf(
 		`\%ssection{%s}`,
 		strings.Repeat("sub", l),
 		t,
@@ -193,23 +197,23 @@ func (c *Compiler) AddSection(t string, l int) {
 }
 
 func (c *Compiler) AddEmph(t string) {
-	c.AddLatex(`\textit{`)
+	c.Write(`\textit{`)
 	c.AddText(t)
-	c.AddLatex(`}`)
+	c.Write(`}`)
 }
 
 func (c *Compiler) AddBold(t string) {
-	c.AddLatex(`\textbf{`)
+	c.Write(`\textbf{`)
 	c.AddText(t)
-	c.AddLatex(`}`)
+	c.Write(`}`)
 }
 
 func (c *Compiler) AddLink(url, text string) {
-	c.AddLatex(`\href{`)
+	c.Write(`\href{`)
 	c.AddText(url)
-	c.AddLatex(`}{`)
+	c.Write(`}{`)
 	c.AddText(text)
-	c.AddLatex(`}`)
+	c.Write(`}`)
 }
 
 func (c *Compiler) AddListItem(list, label string) {
@@ -230,10 +234,10 @@ func (c *Compiler) AddListItem(list, label string) {
 	}
 
 	if label != "" {
-		c.AddLatex(`\item[`)
+		c.Write(`\item[`)
 		c.AddText(label)
-		c.AddLatex(`] `)
+		c.Write(`] `)
 	} else {
-		c.AddLatex(`\item `)
+		c.Write(`\item `)
 	}
 }
