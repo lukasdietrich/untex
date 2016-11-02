@@ -1,0 +1,16 @@
+language: go
+go:
+  - 1.7
+
+before_install:
+  - go get github.com/pointlander/peg
+  - go get github.com/shurcooL/vfsgen
+
+install:
+  - go generate
+  - go get -v
+
+script:
+  - go build -v
+  - go test -v -coverprofile=coverage.txt
+  - go tool cover -func=coverage.txt
