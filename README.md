@@ -17,9 +17,22 @@ go get
 go build
 ```
 
-## 2. Documentation
+## 2. Usage
 
-### 2.1 Templates
+```sh
+untex -output [destination .tex file] [source file]
+```
+
+If no `-output` is set, the output will be written to `STDOUT`.  
+This can be useful to pipe the generated LaTeX to `pdflatex` like so:
+
+```sh
+untex [source file] | pdflatex
+```
+
+## 3. Documentation
+
+### 3.1 Templates
 
 Templates can link to local paths or `http(s)` urls.
 If no template is set, a default one is provided from `assets/default.xml`.
@@ -50,7 +63,7 @@ meta section available.
 
 ```
 
-### 2.2 Syntax
+### 3.2 Syntax
 
 The root file can (and should) have a meta section.
 This section contains of a key-value configuration, that will be used 
@@ -64,7 +77,7 @@ title:      My first Untex document
 ---
 ```
 
-#### 2.2.1 Imports
+#### 3.2.1 Imports
 
 Subfiles can be imported and trandformed as well.
 
@@ -72,7 +85,7 @@ Subfiles can be imported and trandformed as well.
 @import(sections/my-other-file.tex)
 ```
 
-#### 2.2.2 Headlines
+#### 3.2.2 Headlines
 
 Headlines start with one to three `#`'s and get translated to 
 `\section`, `\subsection` or `\subsubsection` respectively.
@@ -83,20 +96,20 @@ Headlines start with one to three `#`'s and get translated to
 ## This is a subsection
 ```
 
-#### 2.2.3 Lists
+#### 3.2.3 Lists
 
 There are three types of lists, that can be nested into each other.
 
 ```
 - This is an unordered list
     1. This is an
-    2. ordered list
+    3. ordered list
 
 Red) This is a named list
     Blue) :-)
 ```
 
-#### 2.2.4 Plain LaTeX
+#### 3.2.4 Plain LaTeX
 
 Plain LaTeX can be used as is, if needed.
 
@@ -110,7 +123,7 @@ Plain LaTeX can be used as is, if needed.
 %%%
 ```
 
-#### 2.2.5 Inlines
+#### 3.2.5 Inlines
 
 In paragraphs, as well as in list items the following can be used.
 
