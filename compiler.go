@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 )
 
@@ -34,6 +35,9 @@ type Compiler struct {
 	w  io.Writer
 	fs *Filesystem
 
+	dir  string
+	seen map[string]bool
+
 	meta Meta
 	tmpl *Template
 	errc chan<- error
@@ -45,6 +49,16 @@ type Compiler struct {
 }
 
 func (c *Compiler) Compile(src string) error {
+	if c.root {
+		abs, err := filepath.Abs(src)
+		if err != nil {
+			return err
+		}
+		src = abs
+	} else if c.seen[src] {
+		return fmt.Errorf("multiple imports of '%s' detected", src)
+	}
+
 	buf, err := c.fs.ReadFile(src)
 	if err != nil {
 		return err
@@ -52,7 +66,10 @@ func (c *Compiler) Compile(src string) error {
 
 	if c.root {
 		c.meta = make(Meta)
+		c.seen = make(map[string]bool)
 	}
+
+	c.dir, c.seen[src] = filepath.Dir(src), true
 
 	g := Grammar{
 		Buffer:   string(buf),
@@ -73,12 +90,17 @@ func (c *Compiler) Compile(src string) error {
 	}()
 
 	return <-errc
-
 }
 
 func (c *Compiler) Import(src string) {
-	err := (&Compiler{w: c.w}).Compile(src)
-	if err != nil {
+	compiler := Compiler{
+		w:    c.w,
+		fs:   c.fs,
+		seen: c.seen,
+	}
+	src = filepath.Clean(filepath.Join(c.dir, src))
+
+	if err := compiler.Compile(src); err != nil {
 		c.errc <- err
 	}
 }
