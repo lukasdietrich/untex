@@ -103,6 +103,7 @@ func (t *Template) ApplyMeta(m Meta) error {
 	var (
 		err error
 		s   = []*string{
+			&t.Document.Preamble,
 			&t.Document.Prefix,
 			&t.Document.Suffix,
 			&t.Document.Options,
