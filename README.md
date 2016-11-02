@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lukasdietrich/untex.svg?branch=master)](https://travis-ci.org/lukasdietrich/untex)
+
 # Untex
 
 A *clean* Latex preprocessor.
