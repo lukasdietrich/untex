@@ -8,7 +8,7 @@ before_install:
 
 install:
   - go generate
-  - go get -v
+  - go get -v -t
 
 script:
   - go build -v
