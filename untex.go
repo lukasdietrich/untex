@@ -50,9 +50,8 @@ func main() {
 	var (
 		buffer   = bufio.NewWriter(writer)
 		compiler = Compiler{
-			w:    buffer,
-			fs:   fs,
-			root: true,
+			w:  buffer,
+			fs: fs,
 		}
 	)
 

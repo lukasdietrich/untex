@@ -32,81 +32,71 @@ var (
 type Meta map[string]string
 
 type Compiler struct {
-	w  io.Writer
-	fs *Filesystem
-
-	dir  string
-	seen map[string]bool
+	w     io.Writer
+	fs    *Filesystem
+	trace StringStack
 
 	meta Meta
 	tmpl *Template
-	errc chan<- error
+	errc chan error
 
-	root  bool
 	nl    int
 	tabs  int
 	block StringStack
 }
 
-func (c *Compiler) Compile(src string) error {
-	if c.root {
-		abs, err := filepath.Abs(src)
-		if err != nil {
-			return err
-		}
-		src = abs
-	} else if c.seen[src] {
-		return fmt.Errorf("multiple imports of '%s' detected", src)
-	}
-
-	buf, err := c.fs.ReadFile(src)
+func (c *Compiler) compile(src string) error {
+	abs, err := filepath.Abs(src)
 	if err != nil {
 		return err
 	}
 
-	if c.root {
-		c.meta = make(Meta)
-		c.seen = make(map[string]bool)
+	if c.trace.Contains(abs) {
+		return fmt.Errorf("recursive import of '%s'", abs)
 	}
 
-	c.dir, c.seen[src] = filepath.Dir(src), true
+	buf, err := c.fs.ReadFile(abs)
+	if err != nil {
+		return err
+	}
+
+	c.trace.Push(abs)
+	defer c.trace.Pop()
 
 	g := Grammar{
 		Buffer:   string(buf),
 		Compiler: c,
 	}
 	g.Init()
-	err = g.Parse()
-	if err != nil {
+	if err := g.Parse(); err != nil {
 		return err
 	}
 
-	errc := make(chan error)
-	c.errc = errc
+	g.Execute()
+	return nil
+}
+
+func (c *Compiler) Compile(src string) error {
+	c.meta = make(Meta)
+	c.errc = make(chan error)
 
 	go func() {
-		g.Execute()
-		close(errc)
+		c.compile(src)
+		close(c.errc)
 	}()
 
-	return <-errc
+	return <-c.errc
 }
 
 func (c *Compiler) Import(src string) {
-	compiler := Compiler{
-		w:    c.w,
-		fs:   c.fs,
-		seen: c.seen,
-	}
-	src = filepath.Clean(filepath.Join(c.dir, src))
-
-	if err := compiler.Compile(src); err != nil {
+	err := c.compile(filepath.Join(filepath.Dir(c.trace.Peek()), src))
+	if err != nil {
 		c.errc <- err
 	}
 }
 
 func (c *Compiler) Begin() {
-	if !c.root {
+	if c.trace.Size() > 1 {
 		return
 	}
 
@@ -134,7 +124,7 @@ func (c *Compiler) Begin() {
 }
 
 func (c *Compiler) End() {
-	if !c.root {
+	if c.trace.Size() > 1 {
 		return
 	}
 

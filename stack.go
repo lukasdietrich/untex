@@ -31,6 +31,16 @@ func (s *StringStack) Peek() string {
 	return ""
 }
 
+func (s *StringStack) Contains(str string) bool {
+	for i := s.i - 1; i >= 0; i-- {
+		if s.stack[i] == str {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *StringStack) Empty() bool {
 	return s.Size() <= 0
 }
