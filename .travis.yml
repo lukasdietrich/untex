@@ -14,3 +14,21 @@ script:
   - go build -v
   - go test -v -coverprofile=coverage.txt
   - go tool cover -func=coverage.txt
+
+before_deploy:
+  - go get github.com/mitchellh/gox
+  - gox -os "linux windows darwin" -arch "386 amd64"
+
+deploy:
+  provider: releases
+  file:
+    - untex_darwin_amd64
+    - untex_linux_amd64
+    - untex_windows_386.exe
+    - untex_windows_amd64.exe
+  on:
+    tags: true
+    repo: lukasdietrich/untex
+  skip_cleanup: true
+  api_key:
+    secure: 2+RJm1nj3BMPGwStL9lTBmHj6TCaPBOlJdPteli25MOhCNLQXtHtsxFQaVcVQ+7nhOWGXRtVr1yqGeIxvXpwZ86XH8h4SbaJlRT8Jm+LNhP2I8eT53GOzvB8uSGhzExTXNERkDHNqSeNa5/JbaTBkl2uiosUuOylnUK6SsLM87nw2aUVoYpjW/kB40gICNl9b+pcUlhnBuq6mVoy+X6QjrS9wetHRKzC4r0QfgYZlnr+MmCf56uuVeD/wg8hYa0KnW6ys/TamOPjDGR6nWjbfzz8AEV7rE7X8iGty3K7PxfpQRa/orb2RH31SUEoPdYbt/cMo8jMBAG+xEMUUwQLAtAxbgZXXSxJtmJ/snGIS5V7RCjfK39TxXqKo+2Z/UU6gUjOOaTQJSi/4WUf1Q1Z/jMsRYZtMVoewp0w4jP7sTHWEjFVmKj3v4b22nbZvH3behyQI/T7rLCIOvxQ2xMVsVeW1fX2OwJBTNM94YzKPfk5iyWyP9naok8PmxsLSEtamYU/e0oXId8NMAp0ZKHimfwAKAy27j2B2JXW+aiVQ+n3Al4OT4Jg8f5zMg63d6bfEKKuDOO4SybZ+zkgmsH9nkJ1HmwlEObPyHi8vQnvoFOZHyvw2gi+ceVpnDgWvdZZeVraMaYLv4K6/JdvDtny1SXSW2hhsk0C8kk+JDOjsKc=
