@@ -17,15 +17,12 @@ script:
 
 before_deploy:
   - go get github.com/mitchellh/gox
-  - gox -os "linux windows darwin" -arch "386 amd64"
+  - gox -osarch "windows/amd64 windows/386 linux/amd64 linux/arm darwin/amd64"
 
 deploy:
   provider: releases
-  file:
-    - untex_darwin_amd64
-    - untex_linux_amd64
-    - untex_windows_386.exe
-    - untex_windows_amd64.exe
+  file_glob: true
+  file: "untex_*"
   on:
     tags: true
     repo: lukasdietrich/untex
