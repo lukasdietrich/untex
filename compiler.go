@@ -45,6 +45,10 @@ type Compiler struct {
 	block StringStack
 }
 
+func (c *Compiler) dir() string {
+	return filepath.Dir(c.trace.Peek())
+}
+
 func (c *Compiler) compile(src string) error {
 	abs, err := filepath.Abs(src)
 	if err != nil {
@@ -89,7 +93,7 @@ func (c *Compiler) Compile(src string) error {
 }
 
 func (c *Compiler) Import(src string) {
-	err := c.compile(filepath.Join(filepath.Dir(c.trace.Peek()), src))
+	err := c.compile(RelativePath(c.dir(), src))
 	if err != nil {
 		c.errc <- err
 	}
@@ -100,7 +104,7 @@ func (c *Compiler) Begin() {
 		return
 	}
 
-	tmpl, err := GetTemplate(c.meta["template"])
+	tmpl, err := GetTemplate(c.fs, c.dir(), c.meta["template"])
 	if err != nil {
 		c.errc <- err
 		return

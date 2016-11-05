@@ -3,12 +3,17 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/blang/vfs"
 )
 
 type Filesystem struct {
 	vfs.Filesystem
+}
+
+func OSFileSystem() *Filesystem {
+	return NewFilesystem(vfs.OS())
 }
 
 func NewFilesystem(vfs vfs.Filesystem) *Filesystem {
@@ -31,4 +36,12 @@ func (f *Filesystem) ReadFile(name string) ([]byte, error) {
 
 	defer r.Close()
 	return ioutil.ReadAll(r)
+}
+
+func RelativePath(base, rel string) string {
+	if filepath.IsAbs(rel) {
+		return rel
+	}
+
+	return filepath.Join(base, rel)
 }

@@ -9,8 +9,6 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/blang/vfs"
 )
 
 const (
@@ -23,7 +21,7 @@ func main() {
 		out    string
 		writer io.Writer
 
-		fs = NewFilesystem(vfs.OS())
+		fs = OSFileSystem()
 	)
 
 	flag.StringVar(&out, "output", STDOUT, "output file")

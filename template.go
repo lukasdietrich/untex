@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -61,7 +60,7 @@ func ReadTemplate(r io.Reader) (*Template, error) {
 	return &t, xml.NewDecoder(r).Decode(&t)
 }
 
-func GetTemplate(src string) (*Template, error) {
+func GetTemplate(fs *Filesystem, base, src string) (*Template, error) {
 	var (
 		r   io.ReadCloser
 		err error
@@ -74,7 +73,7 @@ func GetTemplate(src string) (*Template, error) {
 		res, _err := http.Get(src)
 		r, err = res.Body, _err
 	default:
-		r, err = os.Open(src)
+		r, err = fs.Open(RelativePath(base, src))
 	}
 
 	if err != nil {
