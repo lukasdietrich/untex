@@ -55,7 +55,7 @@ Tab         <- ( '    '
                / (' '? ' '? ' '? [\t])
                )                        { p.tabs++ }
 
-Latex       <- '%%%' Spacing Newline
+Latex       <- '%%%' Spacing
                <(!'%%%' .)*>            { p.AddLatex(text) }
                '%%%' Spacing
 
@@ -69,7 +69,7 @@ Inline      <- ( IMathBlock
                / <Text>                 { p.AddText(text) }
                )
 
-IMathBlock  <- <'$$' (!'$' Text)+ '$$'> { p.AddLatex(text) }
+IMathBlock  <- <'$$' (!'$$' .)+ '$$'>   { p.AddLatex(text) }
 IMath       <- <'$' (!'$' Text)+ '$'>   { p.AddLatex(text) }
 IEmph       <- '/' <(!'/' Text)+> '/'   { p.AddEmph(text) }
 IBold       <- '*' <(!'*' Text)+> '*'   { p.AddBold(text) }
